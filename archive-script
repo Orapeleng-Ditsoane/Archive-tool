@@ -1,0 +1,39 @@
+#!/bin/bash
+
+# Check if log directory argument is provided
+if [ -z "$1" ]; then
+  echo "Usage: log-archive <log-directory>"
+  exit 1
+fi
+
+LOG_DIR="$1"
+ARCHIVE_DIR="/opt/log-archive/archives"
+LOG_FILE="/opt/log-archive/archive.log"
+
+# Check if log directory exists
+if [ ! -d "$LOG_DIR" ]; then
+  echo "Error: Log directory does not exist."
+  exit 1
+fi
+
+# Create archive directory if it doesn't exist
+mkdir -p "$ARCHIVE_DIR"
+
+# Timestamp
+TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
+ARCHIVE_NAME="logs_archive_${TIMESTAMP}.tar.gz"
+ARCHIVE_PATH="${ARCHIVE_DIR}/${ARCHIVE_NAME}"
+
+# Create tar.gz archive
+tar -czf "$ARCHIVE_PATH" "$LOG_DIR" 2>/dev/null
+
+# Check if archive was created successfully
+if [ $? -eq 0 ]; then
+  echo "$(date '+%Y-%m-%d %H:%M:%S') - Archived $LOG_DIR to $ARCHIVE_PATH" >> "$LOG_FILE"
+  echo "Logs successfully archived:"
+  echo "$ARCHIVE_PATH"
+else
+  echo "$(date '+%Y-%m-%d %H:%M:%S') - ERROR: Failed to archive $LOG_DIR" >> "$LOG_FILE"
+  echo "Failed to archive logs."
+  exit 1
+fi
